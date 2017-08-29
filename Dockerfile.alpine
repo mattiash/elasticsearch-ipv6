@@ -2,31 +2,15 @@ FROM alpine:3.6
 
 ENV ELASTIC_CONTAINER true
 ENV PATH /usr/share/elasticsearch/bin:$PATH
-ENV JAVA_HOME /usr/lib/jvm/jre-1.8.0-openjdk
-
-RUN { \
-		echo '#!/bin/sh'; \
-		echo 'set -e'; \
-		echo; \
-		echo 'dirname "$(dirname "$(readlink -f "$(which javac || which java)")")"'; \
-	} > /usr/local/bin/docker-java-home \
-	&& chmod +x /usr/local/bin/docker-java-home
 ENV JAVA_HOME /usr/lib/jvm/java-1.8-openjdk
-ENV PATH $PATH:/usr/lib/jvm/java-1.8-openjdk/jre/bin:/usr/lib/jvm/java-1.8-openjdk/bin
 
-ENV JAVA_VERSION 8u131
-ENV JAVA_ALPINE_VERSION 8.131.11-r2
+RUN apk add --no-cache bash curl openjdk8
 
-RUN set -x \
-	&& apk add --no-cache \
-		sudo bash ca-certificates curl openssl openjdk8="$JAVA_ALPINE_VERSION" \
-	&& [ "$JAVA_HOME" = "$(docker-java-home)" ] \
-  && update-ca-certificates
+# Install elasticsearch
 
-RUN addgroup -g 1100 elasticsearch && adduser -u 1100 -G elasticsearch -D -h /usr/share/elasticsearch elasticsearch
+RUN addgroup -g 1000 elasticsearch && adduser -u 1000 -G elasticsearch -D -h /usr/share/elasticsearch elasticsearch
 
 WORKDIR /usr/share/elasticsearch
-
 USER elasticsearch
 
 # Download and extract defined ES version.
